@@ -1,0 +1,769 @@
+{
+  "name": "001",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c79881fb-3172-4195-a27a-d798ac9a1d5c",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -944,
+        96
+      ],
+      "id": "062a5731-402f-4bb0-85f0-053cb0e88b4b",
+      "name": "Webhook",
+      "webhookId": "c79881fb-3172-4195-a27a-d798ac9a1d5c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer MQbKnN7P6R7+5lzSq1CF1A3wGrbKhMvq9ZXozAQm0EOwATcmXu/xSkDg001+EOzBbjGNLXVzD2idu2vnhENIUPOHfYl7IRSkId4KycNEVRpZE8chIEKemcwbk+jzUa3mXGy5HyKZWBoO4Mrh/JLs1QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"replyToken\": \"{{ $('Edit Fields').first().json.replyToken }}\",\n    \"messages\": [\n        {\n            \"type\": \"text\",\n            \"text\": \"{{ $json.output.replaceAll('\\\"', '\\\\\\\"').replaceAll('\\n', '\\\\n').trim() || 'No response available.' }}\"\n        }\n    ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        96
+      ],
+      "id": "9672862d-6468-4a1f-9c15-f1d3fc83378c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b27199cf-c09a-4831-ae9a-9319ea36a308",
+              "name": "message",
+              "value": "={{ $json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "59e396f7-0a13-4591-a2ca-48082e189458",
+              "name": "timestamp",
+              "value": "={{ $json.body.events[0].timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "5cc377ca-7dd8-40c1-b1bd-8b2c736f0d19",
+              "name": "userId",
+              "value": "={{ $json.body.events[0].source.userId }}",
+              "type": "string"
+            },
+            {
+              "id": "7c9128f9-b20e-4d56-a5fb-46f05473d740",
+              "name": "replyToken",
+              "value": "={{ $json.body.events[0].replyToken }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        96
+      ],
+      "id": "e51bf79a-849a-480a-bf01-91f2f590f04c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ตอบคำถาม\n{{ $('Webhook').item.json.body.events[0].message.text }}\nโดยคำถามสามารถนำข้อมูลการคุมกำเนิดให้ใช้ tool Supabase Vector Search\nโดยการตอบคำถามให้คัดเลือกเฉพาะข้อมูลที่สำคัญ ไม่จำเป็นต้องตอบยาว \nไม่ทำเป็นตาราง ตอบสั้นๆ แต่ได้ใจความ \nและช่วยแปลข้อมูลจากภาษาอังกฤษ ให้เป็นภาษาไทยที่ถูกต้อง\nโดยตอบแค่ เรื่องคุมกำเนิด \nถ้ามีเรื่อง อื่นให้ตอบว่า \"ฉันไม่สามารถตอบคำถามคุณได้ค่ะ\"\nreply token: \n{{ $('Webhook').item.json.body.events[0].replyToken }}",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -464,
+        96
+      ],
+      "id": "1c147715-55a9-4aaf-b9b0-78e987fa1edc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').first().json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        304
+      ],
+      "id": "5cf4f399-3203-425c-82f0-469eb0a4693c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1E8LJGQwRPYWXOVaDO6lcoGpahGjpXLHWIAsMKw_cQb8/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "history",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E8LJGQwRPYWXOVaDO6lcoGpahGjpXLHWIAsMKw_cQb8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User ID": "={{ $('Edit Fields').first().json.userId }}",
+            "Message": "={{ $('Edit Fields').first().json.message }}",
+            "AI Assistant": "={{ $json.output }}",
+            "Timestamp": "={{ $now.setZone('Asia/Bangkok').toFormat('yyyy-MM-dd HH:mm:ss') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Assistant",
+              "displayName": "AI Assistant",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -144,
+        288
+      ],
+      "id": "6e1dc3ea-8cc8-4aee-a39d-99bca6cd3ce3",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ifMoQ4lVz5k5FYBs",
+          "name": "Google Sheets account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อความจากฟิลด์ content (plain text)\nconst data = $('Data Example').first().json.content || \"\";\n\n// ดึง prompt ของผู้ใช้จาก Edit Fields\nconst prompt = $('Edit Fields').first().json.message || \"\";\n\n// ส่งค่าออกไปให้ AI Agent\nreturn [\n  {\n    json: {\n      prompt,\n      contraceptive: data\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1824,
+        176
+      ],
+      "id": "fd43efaa-29f4-49d9-b82f-d62210b68c6c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        576
+      ],
+      "id": "6b8e43e7-d85b-464c-8998-adbf34accb4d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "35OaSR7lBkU6SZml",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1744,
+        576
+      ],
+      "id": "2722d566-b172-41c2-bb30-4bf5433b2c5e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ApVxVIP7DKBMt49l",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        576
+      ],
+      "id": "67ad4e19-b3aa-4ac3-afeb-276702f36370",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "jGskiEewnyYIhDfp",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        576
+      ],
+      "id": "99f93d79-4d3e-487e-b560-7e8c54a0dbf5",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "4SeidtpnzQZAknlQ",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        256
+      ],
+      "id": "446610e8-041b-4212-9b84-7330fc9ab363",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "0xMagbq6CokqpiSz",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1IsZ6WnQvglY5nJ4JrJ7CzvccsDvHUuIHvBdcwD2zOMI/edit?tab=t.0"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -2000,
+        176
+      ],
+      "id": "59c3a34c-4f05-45a4-ace0-bea61ce7bf20",
+      "name": "Data Example",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "Gz9Xzb8Y3QdrXHe9",
+          "name": "Google Docs account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1zTg95_t42guIqG9_EV5vv-0yuEwusyywAeeXXFSGkGM/edit?tab=t.0"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -2016,
+        368
+      ],
+      "id": "6a6ac1cb-7fe7-4492-9500-5f32403cfeb1",
+      "name": "WHO MEC 2025 6th edition",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "Gz9Xzb8Y3QdrXHe9",
+          "name": "Google Docs account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อความจากฟิลด์ content (เป็น plain text) \nconst data = $('WHO MEC 2025 6th edition').first().json.content || \"\"; \n// ดึง prompt ของผู้ใช้ \nconst prompt = $('Edit Fields').first().json.message || \"\"; \n// ส่งค่าออกไปให้ AI Agent \nreturn [ { json: { prompt, contraceptive: data } } ];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        368
+      ],
+      "id": "e2b763d5-349b-4610-b168-ba50fcc3461c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://drive.google.com/drive/u/0/folders/1-bDcMfnw8zX6nkZ9PmSqOb6Ubt3FPCz2",
+          "__regex": "https:\\/\\/drive\\.google\\.com(?:\\/.*|)\\/folders\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        512
+      ],
+      "id": "0d8add77-1d99-4d7d-b933-ecff5dd2f141",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "lTftCjoXg0PK4mSU",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1072,
+        512
+      ],
+      "id": "a7af6561-46c5-45c3-a63b-666402ffb711",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "lTftCjoXg0PK4mSU",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -880,
+        512
+      ],
+      "id": "a9275ca6-9f21-474c-9727-b9fe6bf36d3a",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "vim0mbY0plDI7rr6",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        656
+      ],
+      "id": "45403720-8ced-4c19-ae1f-355c6dcff600",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        896
+      ],
+      "id": "3fb5642e-42b9-4864-89d0-379241acf923",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "35OaSR7lBkU6SZml",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "work with course data in vector .db",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        512
+      ],
+      "id": "8e847a9b-c089-4b11-8a84-d51f0604e037",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "vim0mbY0plDI7rr6",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "woraphonp.app.n8n.cloud",
+            "user-agent": "LineBotWebhook/2.0",
+            "content-length": "833",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "147.92.149.166",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "JP",
+            "cf-ray": "9a99a6248624d4e7-NRT",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json; charset=utf-8",
+            "x-forwarded-for": "147.92.149.166, 172.70.49.98",
+            "x-forwarded-host": "woraphonp.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-18-7959cfc789-zp8xj",
+            "x-is-trusted": "yes",
+            "x-line-signature": "28xEGEYuk4cnZYSgJ8VzfI7V5sSrgU8xd+3tnazA1qs=",
+            "x-real-ip": "147.92.149.166"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "destination": "U6be0ead6a88dba5895ce234a6618ea2b",
+            "events": [
+              {
+                "type": "message",
+                "message": {
+                  "type": "text",
+                  "id": "590843927612358895",
+                  "quoteToken": "Byix8GzQhTrcsjOpDh-IhHlEu8CtHzEsmV9zbJPvBT36M7fxB58kD_KQKjU7Uht23NrXfMyFGcU_nSH75uLOZ_rgHOkCIutj91kem0SfZ4gocAm66TFtfJuoJNmXy9Sz3US3Jkddg_cGIv-O7gjO9Q",
+                  "markAsReadToken": "sUEzSN9fSgon4lzyGnRRJg47DVN4F6voDkf1uQwtA_2IiZEAqmge_uc7WUqxU1yxia86FR9lhfDVFLgcO20QnKIP5-jd8OVrDbN8Z0TpfzUNgcw7TpUfIB47pY-AqrtAIKdDIQq2rp19HzoHXEHCa9JkDkzoocY4Zts-1XbD6AOB6CAx8MKeAb5RWM7KjTm0Bg_CcFbSIfkpQyzJA4p0fg",
+                  "text": "วิธีการคุมกำเนิดมีอะไรบ้าง"
+                },
+                "webhookEventId": "01KBS4T4BEGP08CQN9ATHNHMCK",
+                "deliveryContext": {
+                  "isRedelivery": false
+                },
+                "timestamp": 1765001728238,
+                "source": {
+                  "type": "user",
+                  "userId": "U10a9d35a4d008f5be507bc27ff7b207f"
+                },
+                "replyToken": "5c78d368694d4fb4a6b4cfa44115aa32",
+                "mode": "active"
+              }
+            ]
+          },
+          "webhookUrl": "https://woraphonp.app.n8n.cloud/webhook/c79881fb-3172-4195-a27a-d798ac9a1d5c",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Example": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WHO MEC 2025 6th edition": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eca727f0-84ec-4f92-86db-71b9deefdf54",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef1085356c0b2005329fadb241e686253278bd57b1cbeaa7f153d69c59137e4e"
+  },
+  "id": "uXM646zzSKnLWapX",
+  "tags": []
+}
